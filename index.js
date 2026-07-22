@@ -40,6 +40,21 @@ app.get('/tasks/:id',(req,res)=>{
     res.json(task)
 })
 
+//post tasks api
+app.post('/tasks',(req,res)=>{
+    const title=req.body.title
+    if(!title || typeof title!=='string' || title.trim()===" ")
+        return res.status(400).json({error:"please add title"})
+    const newId=length.tasks+1
+    const newTask={
+        id:newId,
+        title:title.trim(),
+        done:true
+    };
+    tasks.push(newTask)
+    res.status(201).json(newTask)
+})
+
 //start server
 app.listen(port,()=>{
     console.log(`start the server http://localhost:${port}`)
