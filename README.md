@@ -25,5 +25,6 @@ A clean and lightweight RESTful API built with **Node.js** and **Express.js** fo
 
 ### 1. Clone the repository
 ```bash
-git clone <your-repository-url>
-cd <repository-folder-name>
+git clone <https://github.com/dtech0/api-end-point>
+cd <api-end-point>
+cd<API>
