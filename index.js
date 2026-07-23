@@ -1,5 +1,5 @@
 const express=require('express')
-const swaggerUi=require('swagger-Ui-express')
+const swaggerUi=require('swagger-ui-express')
 const bodyparser=require('body-parser')
 const app=express()
 const port=3000
