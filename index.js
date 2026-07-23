@@ -45,7 +45,7 @@ app.post('/tasks',(req,res)=>{
     const title=req.body.title
     if(!title || typeof title!=='string' || title.trim()===" ")
         return res.status(400).json({error:"please add title"})
-    const newId=length.tasks+1
+    const newId=tasks.length+1
     const newTask={
         id:newId,
         title:title.trim(),
@@ -56,11 +56,11 @@ app.post('/tasks',(req,res)=>{
 })
 
 //update task
-app.put('/tasks/:id',(res,req)=>{
+app.put('/tasks/:id',(req,res)=>{
     const id=parseInt(req.params.id)
     const taskIndex=tasks.findIndex(t=>t.id===id)
     if(taskIndex==-1){
-        res.status(404).json({error:`Tsk id ${id} not found`})
+        return res.status(404).json({error:`Task id ${id} not found`})
     }
     const{title,done}=req.body
      if(title!==undefined &&( typeof title!=='string' || title.trim()===" "))
@@ -78,6 +78,8 @@ app.put('/tasks/:id',(res,req)=>{
     }
     return res.status(200).json(tasks[taskIndex])
 })
+
+
 //delete api
 app.delete('/tasks/:id',(req,res)=>{
     const id=parseInt(req.params.body)
@@ -88,7 +90,107 @@ app.delete('/tasks/:id',(req,res)=>{
     tasks.splice(Index,1)
     return res.status(204).send()
 })
+//swagger api endpoint
 
+const swaggerDocument = {
+  openapi: "3.0.0",
+  info: {
+    title: "Task Management API",
+    version: "1.0.0",
+    description: "FlyRank Internship - Week 2 Task API"
+  },
+  paths: {
+    "/": {
+      get: {
+        summary: "API Information",
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/health": {
+      get: {
+        summary: "Check Server Health",
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/tasks": {
+      get: {
+        summary: "Get all tasks",
+        responses: { "200": { description: "List of all tasks" } }
+      },
+      post: {
+        summary: "Create a new task",
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["title"],
+                properties: {
+                  title: { type: "string", example: "submit Assignment" }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          "201": { description: "Task created successfully" },
+          "400": { description: "Bad Request - Title is required" }
+        }
+      }
+    },
+    "/tasks/{id}": {
+      get: {
+        summary: "Get a single task by ID",
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "integer" }, example: 1 }
+        ],
+        responses: {
+          "200": { description: "Task found" },
+          "404": { description: "Task not found" }
+        }
+      },
+      put: {
+        summary: "Update an existing task",
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "integer" }, example: 1 }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  title: { type: "string", example: "Updated task title" },
+                  done: { type: "boolean", example: true }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          "200": { description: "Task updated successfully" },
+          "400": { description: "Invalid input" },
+          "404": { description: "Task not found" }
+        }
+      },
+      delete: {
+        summary: "Delete a task by ID",
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "integer" }, example: 1 }
+        ],
+        responses: {
+          "204": { description: "Task deleted successfully" },
+          "404": { description: "Task not found" }
+        }
+      }
+    }
+  }
+};
+
+// Swagger Docs Route
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerDocument))
 //start server
