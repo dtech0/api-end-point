@@ -55,6 +55,42 @@ app.post('/tasks',(req,res)=>{
     res.status(201).json(newTask)
 })
 
+//update task
+app.put('/tasks/:id',(res,req)=>{
+    const id=parseInt(req.params.id)
+    const taskIndex=tasks.findIndex(t=>t.id===id)
+    if(taskIndex==-1){
+        res.status(404).json({error:`Tsk id ${id} not found`})
+    }
+    const{title,done}=req.body
+     if(title!==undefined &&( typeof title!=='string' || title.trim()===" "))
+        return res.status(400).json({error:"title cant be empty"})
+
+    if (title === undefined && done === undefined) {
+        return res.status(400).json({ error: "title and done status is required" });
+    }
+    if (title!==undefined){
+        tasks[taskIndex].title=title.trim()
+
+    }
+    if(done!==undefined){
+      tasks[taskIndex].done=Boolean(done)
+    }
+    return res.status(200).json(tasks[taskIndex])
+})
+//delete api
+app.delete('/tasks/:id',(req,res)=>{
+    const id=parseInt(req.params.body)
+    const Index=tasks.findIndex(t=>t.id === id)
+    if (Index===-1){
+        return res.status(404).json({error:`Task id ${id}not found`})
+    }
+    tasks.splice(Index,1)
+    return res.status(204).send()
+})
+
+
+app.use('/docs',swaggerUi.serve,swaggerUi.setup(swaggerDocument))
 //start server
 app.listen(port,()=>{
     console.log(`start the server http://localhost:${port}`)
