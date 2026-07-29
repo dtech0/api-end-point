@@ -201,6 +201,67 @@ app.listen(port,()=>{
 
 
 
+// Stage 3: Update Task 
+app.put('/tasks/:id', (req, res)=> {
+  let taskId = req.params.id;
+  let title = req.body.title;
+  let done = req.body.done;
+
+  if (title === undefined || done === undefined || title.trim() === "") {
+    res.status(400).json({ error: "Title and done are required" });
+    return;
+  }
+
+  db.get("SELECT * FROM tasks WHERE id = ?", [taskId], (err, row)=> {
+    if (err) {
+     return res.status(500).json({ error: err.message });
+      
+    }
+
+    if (!row) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    let doneAsNumber = Number(done);
+    
+
+    let sql = "UPDATE tasks SET title = ?, done = ? WHERE id = ?";
+    db.run(sql, [title.trim(), doneAsNumber, taskId], (err)=> {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        ;
+      }
+
+      res.json({
+        id: Number(taskId),
+        title: title.trim(),
+        done: Boolean(doneAsNumber)
+      });
+    });
+  });
+});
+
+// Stage 4: Delete Task 
+app.delete('/tasks/:id',(req, res)=> {
+  let taskId = req.params.id;
+
+  let sql = "DELETE FROM tasks WHERE id = ?";
+  db.run(sql, [taskId],  (err) =>{
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+
+    if (this.changes === 0) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    res.status(204).send();
+  });
+});
+
+
 
 
 

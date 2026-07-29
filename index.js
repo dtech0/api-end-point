@@ -92,6 +92,88 @@ app.get('/tasks/:id',async (req, res)=> {
   }
   });
 
+//full crud on postgres
+
+
+//  Create New Task 
+app.post('/tasks', async(req, res) =>{
+  try{
+  let title = req.body.title;
+
+  if (!title || title.trim() === "") {
+    return res.status(400).json({ error: "Title is required" });
+   
+  }
+
+  let cleanTitle = title.trim();
+  let sql = 
+  `
+  INSERT INTO tasks (title, done)
+   VALUES ($1,$2) 
+   RETURNING *
+   `;
+
+
+  const result=await pool.query(sql, [cleanTitle,false])
+
+      res.status(201).json(result.rows[0]);
+}
+catch(err){
+  res.status(500).json({ error: err.message });
+}
+});
+
+
+
+
+// Update Task 
+app.put('/tasks/:id', async(req, res)=> {
+  try{
+  const taskId = req.params.id;
+  const title = req.body.title;
+  const done = req.body.done;
+
+  if (title === undefined || done === undefined || title.trim() === "") {
+    res.status(400).json({ error: "Title and done are required" });
+    return;
+  }
+
+  const result=await pool.query(`
+   UPDATE tasks
+   SET title = $1, done = $2
+   WHERE id = $3
+   RETURNING *`,[title.trim(), Boolean(done), taskId])
+    
+
+    if (result.rows.length===0) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    res.json(result.rows[0]);
+  }catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// Delete Task 
+app.delete('/tasks/:id',async(req, res)=> {
+  try{
+  let taskId = req.params.id;
+
+  const result=await pool.query("DELETE FROM tasks WHERE id = $1 RETURNING *", [taskId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Task not found" });
+    }
+
+    res.status(204).send();
+}
+catch(err){
+  res.status(500).json({ error: err.message });
+}  
+});
+
 
 
 
