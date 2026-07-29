@@ -40,6 +40,62 @@ async function initdb() {
 }
 
 
+//read from postgres
+
+app.get('/tasks', async(req, res)=> {
+  try{
+  const result=await pool.query("SELECT * FROM tasks  ORDER BY id ASC");
+  const rows = result.rows;
+
+    let formattedTasks = [];
+    for (let i = 0; i < rows.length; i++) {
+      let currentTask = rows[i];
+
+      let taskObject = {
+        id: currentTask.id,
+        title: currentTask.title,
+        done:currentTask.done
+      };
+
+      formattedTasks.push(taskObject);
+    }
+
+    res.json(formattedTasks);
+  }
+  catch(err){
+    res.status(500).json({ error: err.message });
+  }
+
+
+});
+
+//  Get Single Task by ID 
+app.get('/tasks/:id',async (req, res)=> {
+  try {
+  let taskId = req.params.id;
+
+  const result=await pool.query("SELECT * FROM tasks WHERE id = $1", [taskId])
+
+    if (result.rows.length===0) {
+    return  res.status(404).json({ error: "Task not found" });
+      
+    }
+
+    res.json({
+      id: result.row[0].id,
+      title: result.row[0].title,
+      done: result.row[0].done
+    });
+  }
+  catch(err){
+    res.status(500).json({ error : err.message })
+  }
+  });
+
+
+
+
+
 
 // Server Listen
 initdb().then(()=>{
